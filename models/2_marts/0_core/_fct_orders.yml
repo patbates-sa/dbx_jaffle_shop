@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: Fact table with one row per order, including the customer, order date, standardized order status, and total successful payment amount in dollars.
+    config:
+      tags:
+        - mart
+        - finance
+        - orders
+    columns:
+      - name: order_id
+        description: Primary key for the order grain of this fact table.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Foreign key to the customer who placed the order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_date
+        description: Calendar date when the order was placed.
+        data_tests:
+          - not_null
+
+      - name: order_status
+        description: Standardized lifecycle status for the order from the orders staging model.
+        data_tests:
+          - not_null
+
+      - name: amount
+        description: Total successful payment amount collected for the order in dollars. Orders without a successful payment resolve to 0.
+        data_tests:
+          - not_null
+
+unit_tests:
+  - name: test_fct_orders_aggregates_successful_payments
+    description: Aggregates only successful payments per order and returns 0 when an order has no successful payment.
+    model: fct_orders
+    given:
+      - input: ref('stg_orders')
+        rows:
+          - {order_id: 1, customer_id: 10, order_date: '2024-01-01', order_status: completed}
+          - {order_id: 2, customer_id: 20, order_date: '2024-01-02', order_status: returned}
+          - {order_id: 3, customer_id: 30, order_date: '2024-01-03', order_status: completed}
+      - input: ref('stg_payments')
+        rows:
+          - {order_id: 1, payment_status: success, amount: 10}
+          - {order_id: 1, payment_status: fail, amount: 99}
+          - {order_id: 1, payment_status: success, amount: 5}
+          - {order_id: 2, payment_status: fail, amount: 20}
+    expect:
+      rows:
+        - {order_id: 1, customer_id: 10, order_date: '2024-01-01', order_status: completed, amount: 15}
+        - {order_id: 2, customer_id: 20, order_date: '2024-01-02', order_status: returned, amount: 0}
+        - {order_id: 3, customer_id: 30, order_date: '2024-01-03', order_status: completed, amount: 0}
+
+  - name: test_fct_orders_returns_zero_when_no_payment_rows_exist
+    description: Preserves order rows and returns 0 amount when there are no matching payment records at all.
+    model: fct_orders
+    given:
+      - input: ref('stg_orders')
+        rows:
+          - {order_id: 11, customer_id: 110, order_date: '2024-02-01', order_status: completed}
+          - {order_id: 12, customer_id: 120, order_date: '2024-02-02', order_status: returned}
+      - input: ref('stg_payments')
+        rows: []
+    expect:
+      rows:
+        - {order_id: 11, customer_id: 110, order_date: '2024-02-01', order_status: completed, amount: 0}
+        - {order_id: 12, customer_id: 120, order_date: '2024-02-02', order_status: returned, amount: 0}
