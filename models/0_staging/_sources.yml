@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: jaffle_shop
-    description: Raw source data for the jaffle shop domain, loaded from the `raw_data.jaffle_shop` schema. These tables are treated as source-of-truth inputs for the staging layer and should remain lightly documented and untransformed here.
+    description: Raw source data for the jaffle shop domain, loaded from the `raw_data.jaffle_shop` schema. These tables are treated as source-of-truth inputs for the staging layer and should remain lightly modeled.
     database: raw_data
     schema: jaffle_shop
     loader: databricks
@@ -20,6 +20,14 @@ sources:
         contains_pii: false
         source_tier: raw
         domain: jaffle_shop
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after:
+          count: 24
+          period: days
+        error_after:
+          count: 48
+          period: days
 
     tables:
       - name: customers
@@ -84,7 +92,6 @@ sources:
                 semantic_role: foreign_key
                 references: jaffle_shop.customers
 
-
           - name: ORDER_DATE
             description: Calendar date when the order was placed.
             config:
@@ -128,7 +135,6 @@ sources:
                 data_type: LONG
                 semantic_role: foreign_key
                 references: jaffle_shop.orders
-
 
           - name: PAYMENTMETHOD
             description: Raw payment method used for the transaction.
