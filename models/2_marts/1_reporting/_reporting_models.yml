@@ -3,6 +3,87 @@ version: 2
 models:
   - name: rpt_customer_summary
     description: Reporting mart with one row per customer, exposing customer profile attributes, order history rollups, and simple business-facing customer segments.
+    semantic_model:
+      enabled: true
+      name: customer_summary
+    agg_time_dimension: most_recent_order_date
+    metrics:
+      - name: customer_count
+        description: Count of customers in the reporting customer summary model.
+        label: Customer Count
+        type: simple
+        agg: count
+        expr: 1
+
+      - name: total_orders
+        description: Total orders across customers in the reporting customer summary model.
+        label: Total Orders
+        type: simple
+        agg: sum
+        expr: order_count
+
+      - name: total_lifetime_value
+        description: Total lifetime value across customers.
+        label: Total Lifetime Value
+        type: simple
+        agg: sum
+        expr: lifetime_value
+
+      - name: average_customer_lifetime_value
+        description: Average lifetime value per customer.
+        label: Average Customer Lifetime Value
+        type: simple
+        agg: average
+        expr: lifetime_value
+
+      - name: average_order_value
+        description: Average customer-level average order value.
+        label: Average Order Value
+        type: simple
+        agg: average
+        expr: average_order_value
+
+      - name: repeat_customer_count
+        description: Count of customers whose reporting segment is repeat.
+        label: Repeat Customer Count
+        type: simple
+        agg: count
+        expr: 1
+        filter: |
+          {{ Dimension('customer__customer_type') }} = 'repeat'
+
+      - name: one_time_customer_count
+        description: Count of customers whose reporting segment is one_time.
+        label: One-Time Customer Count
+        type: simple
+        agg: count
+        expr: 1
+        filter: |
+          {{ Dimension('customer__customer_type') }} = 'one_time'
+
+      - name: prospect_customer_count
+        description: Count of customers whose reporting segment is prospect.
+        label: Prospect Customer Count
+        type: simple
+        agg: count
+        expr: 1
+        filter: |
+          {{ Dimension('customer__customer_type') }} = 'prospect'
+
+      - name: repeat_customer_rate
+        description: Share of customers whose reporting segment is repeat.
+        label: Repeat Customer Rate
+        type: ratio
+        numerator: repeat_customer_count
+        denominator: customer_count
+
+      - name: average_orders_per_customer
+        description: Average number of orders per customer.
+        label: Average Orders Per Customer
+        type: ratio
+        numerator: total_orders
+        denominator: customer_count
+
     config:
       tags:
         - mart
@@ -11,6 +92,9 @@ models:
     columns:
       - name: customer_id
         description: Primary key for the reporting mart at customer grain.
+        entity:
+          type: primary
+          name: customer
         data_tests:
           - not_null
           - unique
@@ -21,12 +105,18 @@ models:
 
       - name: first_name
         description: Customer first name.
+        dimension:
+          type: categorical
 
       - name: last_name
         description: Customer last name.
+        dimension:
+          type: categorical
 
       - name: full_name
         description: Customer full name.
+        dimension:
+          type: categorical
 
       - name: order_count
         description: Number of orders placed by the customer.
@@ -35,9 +125,17 @@ models:
 
       - name: first_order_date
         description: Date of the customer's first order. Null when the customer has not placed an order.
+        granularity: day
+        dimension:
+          type: time
+          name: first_order_date
 
       - name: most_recent_order_date
         description: Date of the customer's most recent order. Null when the customer has not placed an order.
+        granularity: day
+        dimension:
+          type: time
+          name: most_recent_order_date
 
       - name: lifetime_value
         description: Total successful payment amount across all of the customer's orders in dollars.
@@ -46,6 +144,8 @@ models:
 
       - name: customer_type
         description: Customer segment based on order frequency, using prospect for customers with no orders, one_time for customers with one order, and repeat for customers with multiple orders.
+        dimension:
+          type: categorical
         data_tests:
           - not_null
           - accepted_values:
@@ -57,6 +157,8 @@ models:
 
       - name: lifetime_value_tier
         description: Value segment derived from lifetime value and order presence.
+        dimension:
+          type: categorical
         data_tests:
           - not_null
           - accepted_values:
