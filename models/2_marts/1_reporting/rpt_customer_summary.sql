@@ -7,7 +7,8 @@ with customers as (
         order_count,
         first_order_date,
         most_recent_order_date,
-        lifetime_value
+        lifetime_value,
+        average_monthly_orders
     from {{ ref('dim_customer') }}
 ),
 
@@ -21,6 +22,7 @@ final as (
         first_order_date,
         most_recent_order_date,
         lifetime_value,
+        average_monthly_orders,
         case
             when order_count = 0 then 'prospect'
             when order_count = 1 then 'one_time'
