@@ -37,6 +37,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   dbx_jaffle_shop:
+    +state:
+      lag_tolerance: "45m"
+      require_fresh_data_from: any
     "0_staging":
       +materialized: view
 
@@ -44,3 +47,7 @@ models:
       "1_reporting":
         +materialized: table
 
+
+dbt-cloud:
+  project-id: 70437463666553
+  defer-env-id: 70437463672875
