@@ -24,10 +24,10 @@ sources:
       freshness:
         warn_after:
           count: 24
-          period: days
+          period: day
         error_after:
           count: 48
-          period: days
+          period: day
 
     tables:
       - name: customers
