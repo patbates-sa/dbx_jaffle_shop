@@ -20,7 +20,6 @@ sources:
         contains_pii: false
         source_tier: raw
         domain: jaffle_shop
-      loaded_at_field: _loaded_at
       freshness:
         warn_after:
           count: 24
