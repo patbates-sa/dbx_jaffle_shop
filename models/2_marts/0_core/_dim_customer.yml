@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: Customer dimension with one row per customer, including customer attributes and aggregated order history from the orders fact table.
+    config:
+      tags:
+        - mart
+        - customers
+        - core
+    columns:
+      - name: customer_id
+        description: Primary key for the customer dimension.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: first_name
+        description: Customer first name from the staging model.
+
+      - name: last_name
+        description: Customer last name from the staging model.
+
+      - name: full_name
+        description: Customer full name built from first and last name.
+
+      - name: order_count
+        description: Total number of orders placed by the customer.
+        data_tests:
+          - not_null
+
+      - name: first_order_date
+        description: Date of the customer's first order. Null when the customer has not placed an order.
+
+      - name: most_recent_order_date
+        description: Date of the customer's most recent order. Null when the customer has not placed an order.
+
+      - name: lifetime_value
+        description: Total successful payment amount across all of the customer's orders in dollars.
+        data_tests:
+          - not_null
