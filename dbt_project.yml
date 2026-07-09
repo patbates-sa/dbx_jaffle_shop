@@ -40,3 +40,7 @@ models:
     "0_staging":
       +materialized: view
 
+    "2_marts":
+      "1_reporting":
+        +materialized: table
+

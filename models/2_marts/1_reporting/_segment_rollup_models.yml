@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: rpt_customer_segment_rollup
+    description: Reporting mart aggregated by customer frequency and value segments for dashboarding and KPI tracking.
+    config:
+      tags:
+        - mart
+        - reporting
+        - customers
+    columns:
+      - name: customer_type
+        description: Frequency-based customer segment.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - prospect
+                  - one_time
+                  - repeat
+
+      - name: lifetime_value_tier
+        description: Lifetime value segment.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - no_orders
+                  - low_value
+                  - mid_value
+                  - high_value
+
+      - name: customer_count
+        description: Number of customers in the segment intersection.
+        data_tests:
+          - not_null
+
+      - name: total_orders
+        description: Total orders across all customers in the segment intersection.
+        data_tests:
+          - not_null
+
+      - name: total_lifetime_value
+        description: Total lifetime value across all customers in the segment intersection.
+        data_tests:
+          - not_null
+
+      - name: avg_customer_average_order_value
+        description: Average of customer-level average order value within the segment intersection.
+        data_tests:
+          - not_null
+
+      - name: avg_customer_lifetime_value
+        description: Average customer lifetime value within the segment intersection.
+        data_tests:
+          - not_null
+
+unit_tests:
+  - name: test_rpt_customer_segment_rollup_aggregates_segments
+    description: Aggregates customers correctly by reporting segments.
+    model: rpt_customer_segment_rollup
+    given:
+      - input: ref('rpt_customer_summary')
+        rows:
+          - {customer_id: 1, first_name: Ada, last_name: Lovelace, full_name: Ada Lovelace, order_count: 0, first_order_date: null, most_recent_order_date: null, lifetime_value: 0, customer_type: prospect, lifetime_value_tier: no_orders, average_order_value: 0}
+          - {customer_id: 2, first_name: Grace, last_name: Hopper, full_name: Grace Hopper, order_count: 1, first_order_date: '2024-01-05', most_recent_order_date: '2024-01-05', lifetime_value: 20, customer_type: one_time, lifetime_value_tier: low_value, average_order_value: 20}
+          - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80, customer_type: repeat, lifetime_value_tier: high_value, average_order_value: 20}
+          - {customer_id: 4, first_name: Dorothy, last_name: Vaughan, full_name: Dorothy Vaughan, order_count: 2, first_order_date: '2024-02-01', most_recent_order_date: '2024-02-10', lifetime_value: 40, customer_type: repeat, lifetime_value_tier: mid_value, average_order_value: 20}
+    expect:
+      rows:
+        - {customer_type: prospect, lifetime_value_tier: no_orders, customer_count: 1, total_orders: 0, total_lifetime_value: 0, avg_customer_average_order_value: 0, avg_customer_lifetime_value: 0}
+        - {customer_type: one_time, lifetime_value_tier: low_value, customer_count: 1, total_orders: 1, total_lifetime_value: 20, avg_customer_average_order_value: 20, avg_customer_lifetime_value: 20}
+        - {customer_type: repeat, lifetime_value_tier: high_value, customer_count: 1, total_orders: 4, total_lifetime_value: 80, avg_customer_average_order_value: 20, avg_customer_lifetime_value: 80}
+        - {customer_type: repeat, lifetime_value_tier: mid_value, customer_count: 1, total_orders: 2, total_lifetime_value: 40, avg_customer_average_order_value: 20, avg_customer_lifetime_value: 40}

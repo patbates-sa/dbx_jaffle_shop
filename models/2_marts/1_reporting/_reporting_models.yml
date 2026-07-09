@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: rpt_customer_summary
+    description: Reporting mart with one row per customer, exposing customer profile attributes, order history rollups, and simple business-facing customer segments.
+    config:
+      tags:
+        - mart
+        - reporting
+        - customers
+    columns:
+      - name: customer_id
+        description: Primary key for the reporting mart at customer grain.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+
+      - name: first_name
+        description: Customer first name.
+
+      - name: last_name
+        description: Customer last name.
+
+      - name: full_name
+        description: Customer full name.
+
+      - name: order_count
+        description: Number of orders placed by the customer.
+        data_tests:
+          - not_null
+
+      - name: first_order_date
+        description: Date of the customer's first order. Null when the customer has not placed an order.
+
+      - name: most_recent_order_date
+        description: Date of the customer's most recent order. Null when the customer has not placed an order.
+
+      - name: lifetime_value
+        description: Total successful payment amount across all of the customer's orders in dollars.
+        data_tests:
+          - not_null
+
+      - name: customer_type
+        description: Customer segment based on order frequency, using prospect for customers with no orders, one_time for customers with one order, and repeat for customers with multiple orders.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - prospect
+                  - one_time
+                  - repeat
+
+      - name: lifetime_value_tier
+        description: Value segment derived from lifetime value and order presence.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - no_orders
+                  - low_value
+                  - mid_value
+                  - high_value
+
+      - name: average_order_value
+        description: Average successful payment amount per order. Resolves to 0 for customers with no orders.
+        data_tests:
+          - not_null
+
+unit_tests:
+  - name: test_rpt_customer_summary_assigns_customer_segments
+    description: Assigns reporting segments and average order value from the rolled up customer dimension.
+    model: rpt_customer_summary
+    given:
+      - input: ref('dim_customer')
+        rows:
+          - {customer_id: 1, first_name: Ada, last_name: Lovelace, full_name: Ada Lovelace, order_count: 0, first_order_date: null, most_recent_order_date: null, lifetime_value: 0}
+          - {customer_id: 2, first_name: Grace, last_name: Hopper, full_name: Grace Hopper, order_count: 1, first_order_date: '2024-01-05', most_recent_order_date: '2024-01-05', lifetime_value: 20}
+          - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80}
+    expect:
+      rows:
+        - {customer_id: 1, first_name: Ada, last_name: Lovelace, full_name: Ada Lovelace, order_count: 0, first_order_date: null, most_recent_order_date: null, lifetime_value: 0, customer_type: prospect, lifetime_value_tier: no_orders, average_order_value: 0}
+        - {customer_id: 2, first_name: Grace, last_name: Hopper, full_name: Grace Hopper, order_count: 1, first_order_date: '2024-01-05', most_recent_order_date: '2024-01-05', lifetime_value: 20, customer_type: one_time, lifetime_value_tier: low_value, average_order_value: 20}
+        - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80, customer_type: repeat, lifetime_value_tier: high_value, average_order_value: 20}
