@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Cleaned staging model for raw jaffle shop customers with consistent naming and a derived full name.
+    config:
+      tags:
+        - staging
+        - customers
+    columns:
+      - name: customer_id
+        description: Primary key for the customer.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: first_name
+        description: Customer first name.
+
+      - name: last_name
+        description: Customer last name.
+
+      - name: full_name
+        description: Customer full name built from first and last name.
+
+  - name: stg_orders
+    description: Cleaned staging model for raw jaffle shop orders with standardized keys and status values.
+    config:
+      tags:
+        - staging
+        - orders
+    columns:
+      - name: order_id
+        description: Primary key for the order.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Foreign key to the customer who placed the order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_date
+        description: Date the order was placed.
+
+      - name: order_status
+        description: Standardized order status.
+
+  - name: stg_payments
+    description: Cleaned staging model for Stripe payment records with normalized status and payment method values and amount expressed in dollars.
+    config:
+      tags:
+        - staging
+        - payments
+    columns:
+      - name: payment_id
+        description: Primary key for the payment record.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: Foreign key to the related order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: payment_method
+        description: Standardized payment method.
+
+      - name: payment_status
+        description: Standardized payment status.
+
+      - name: amount
+        description: Payment amount in dollars.
