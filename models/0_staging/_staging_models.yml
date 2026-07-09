@@ -50,6 +50,16 @@ models:
 
       - name: order_status
         description: Standardized order status.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - placed
+                  - shipped
+                  - completed
+                  - returned
+                  - return_pending
 
   - name: stg_payments
     description: Cleaned staging model for Stripe payment records with normalized status and payment method values and amount expressed in dollars.
