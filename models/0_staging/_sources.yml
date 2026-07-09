@@ -1,0 +1,150 @@
+version: 2
+
+sources:
+  - name: jaffle_shop
+    description: Raw source data for the jaffle shop domain, loaded from the `raw_data.jaffle_shop` schema. These tables are treated as source-of-truth inputs for the staging layer and should remain lightly documented and untransformed here.
+    database: raw_data
+    schema: jaffle_shop
+    loader: databricks
+    quoting:
+      database: false
+      schema: false
+      identifier: false
+    config:
+      tags:
+        - raw
+        - jaffle_shop
+        - staging_input
+      meta:
+        owner: analytics_engineering
+        contains_pii: false
+        source_tier: raw
+        domain: jaffle_shop
+
+    tables:
+      - name: customers
+        identifier: jaffle_shop_customers
+        description: Raw customer records from the jaffle shop application. One row per customer.
+        config:
+          tags:
+            - customers
+          meta:
+            grain: one row per customer
+            primary_key: id
+        columns:
+          - name: ID
+            description: Primary key for the customer record.
+            data_tests:
+              - not_null
+              - unique
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: primary_key
+
+          - name: FIRST_NAME
+            description: Customer first name as captured in the raw application source.
+            config:
+              meta:
+                data_type: STRING
+
+          - name: LAST_NAME
+            description: Customer last name as captured in the raw application source.
+            config:
+              meta:
+                data_type: STRING
+
+      - name: orders
+        identifier: jaffle_shop_orders
+        description: Raw order records from the jaffle shop application. One row per order.
+        config:
+          tags:
+            - orders
+          meta:
+            grain: one row per order
+            primary_key: id
+        columns:
+          - name: ID
+            description: Primary key for the order record.
+            data_tests:
+              - not_null
+              - unique
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: primary_key
+
+          - name: USER_ID
+            description: Foreign key to the customer who placed the order.
+            data_tests:
+              - not_null
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: foreign_key
+                references: jaffle_shop.customers
+
+
+          - name: ORDER_DATE
+            description: Calendar date when the order was placed.
+            config:
+              meta:
+                data_type: DATE
+                semantic_role: order_date
+
+          - name: STATUS
+            description: Raw order status from the application.
+            config:
+              meta:
+                data_type: STRING
+
+      - name: payments
+        identifier: stripe_payments
+        description: Raw payment transaction records associated with jaffle shop orders, sourced from Stripe.
+        config:
+          tags:
+            - payments
+            - stripe
+          meta:
+            grain: one row per payment transaction
+            primary_key: id
+        columns:
+          - name: ID
+            description: Primary key for the payment record.
+            data_tests:
+              - not_null
+              - unique
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: primary_key
+
+          - name: ORDERID
+            description: Foreign key to the order associated with the payment.
+            data_tests:
+              - not_null
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: foreign_key
+                references: jaffle_shop.orders
+
+
+          - name: PAYMENTMETHOD
+            description: Raw payment method used for the transaction.
+            config:
+              meta:
+                data_type: STRING
+
+          - name: STATUS
+            description: Raw payment status reported by Stripe.
+            config:
+              meta:
+                data_type: STRING
+
+          - name: AMOUNT
+            description: Raw payment amount stored in the source system.
+            config:
+              meta:
+                data_type: LONG
+                semantic_role: amount
