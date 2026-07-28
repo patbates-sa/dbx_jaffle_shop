@@ -31,6 +31,9 @@ models:
 
       - name: full_name
         description: Customer full name built from first and last name in staging.
+        databricks_tags:
+          data_classification: sensitive
+
 
       - name: order_count
         description: Total number of orders placed by the customer. Customers with no orders resolve to 0.
