@@ -22,6 +22,7 @@ final as (
         first_order_date,
         most_recent_order_date,
         lifetime_value,
+        lifetime_value as total_lifetime_value,
         average_monthly_orders,
         case
             when order_count = 0 then 'prospect'
@@ -43,3 +44,4 @@ final as (
 
 select *
 from final
+
