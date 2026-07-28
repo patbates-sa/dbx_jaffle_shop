@@ -195,6 +195,11 @@ models:
         data_tests:
           - not_null
 
+      - name: total_lifetime_value
+        description: Alias of lifetime_value representing the customer's total lifetime value as the sum of order amounts.
+        data_tests:
+          - not_null
+
       - name: customer_type
         description: Customer segment based on order frequency, using prospect for customers with no orders, one_time for customers with one order, and repeat for customers with multiple orders.
         dimension:
@@ -244,6 +249,6 @@ unit_tests:
           - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80, average_monthly_orders: 1.3333333333333333}
     expect:
       rows:
-        - {customer_id: 1, first_name: Ada, last_name: Lovelace, full_name: Ada Lovelace, order_count: 0, first_order_date: null, most_recent_order_date: null, lifetime_value: 0, average_monthly_orders: 0, customer_type: prospect, lifetime_value_tier: no_orders, average_order_value: 0}
-        - {customer_id: 2, first_name: Grace, last_name: Hopper, full_name: Grace Hopper, order_count: 1, first_order_date: '2024-01-05', most_recent_order_date: '2024-01-05', lifetime_value: 20, average_monthly_orders: 1.0, customer_type: one_time, lifetime_value_tier: low_value, average_order_value: 20}
-        - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80, average_monthly_orders: 1.3333333333333333, customer_type: repeat, lifetime_value_tier: high_value, average_order_value: 20}
+        - {customer_id: 1, first_name: Ada, last_name: Lovelace, full_name: Ada Lovelace, order_count: 0, first_order_date: null, most_recent_order_date: null, lifetime_value: 0, total_lifetime_value: 0, average_monthly_orders: 0, customer_type: prospect, lifetime_value_tier: no_orders, average_order_value: 0}
+        - {customer_id: 2, first_name: Grace, last_name: Hopper, full_name: Grace Hopper, order_count: 1, first_order_date: '2024-01-05', most_recent_order_date: '2024-01-05', lifetime_value: 20, total_lifetime_value: 20, average_monthly_orders: 1.0, customer_type: one_time, lifetime_value_tier: low_value, average_order_value: 20}
+        - {customer_id: 3, first_name: Katherine, last_name: Johnson, full_name: Katherine Johnson, order_count: 4, first_order_date: '2024-01-01', most_recent_order_date: '2024-03-15', lifetime_value: 80, total_lifetime_value: 80, average_monthly_orders: 1.3333333333333333, customer_type: repeat, lifetime_value_tier: high_value, average_order_value: 20}
