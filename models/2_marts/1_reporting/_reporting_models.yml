@@ -1,6 +1,59 @@
 version: 2
 
 models:
+  - name: customer_summary_metric_view
+    description: Databricks metric view built off `rpt_customer_summary`, kept closely aligned to the `customer_summary` semantic model for customer reporting metrics.
+    config:
+      tags:
+        - mart
+        - reporting
+        - customers
+        - metric_view
+    columns:
+      - name: customer_id
+        description: Primary key for the reporting mart at customer grain.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: first_name
+        description: Customer first name.
+
+      - name: last_name
+        description: Customer last name.
+
+      - name: full_name
+        description: Customer full name.
+
+      - name: customer_type
+        description: Customer segment based on order frequency, using prospect for customers with no orders, one_time for customers with one order, and repeat for customers with multiple orders.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - prospect
+                  - one_time
+                  - repeat
+
+      - name: lifetime_value_tier
+        description: Value segment derived from lifetime value and order presence.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - no_orders
+                  - low_value
+                  - mid_value
+                  - high_value
+
+      - name: first_order_date
+        description: Date of the customer's first order. Null when the customer has not placed an order.
+
+      - name: most_recent_order_date
+        description: Date of the customer's most recent order. Null when the customer has not placed an order.
+
   - name: rpt_customer_summary
     description: Reporting mart with one row per customer, exposing customer profile attributes, order history rollups, and simple business-facing customer segments.
     semantic_model:
