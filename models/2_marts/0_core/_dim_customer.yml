@@ -8,9 +8,13 @@ models:
         - mart
         - customers
         - core
+      databricks_tags:
+        domain: customers
     columns:
       - name: customer_id
         description: Primary key for the customer dimension and foreign key back to `stg_customers`.
+        databricks_tags:
+          data_classification: public
         data_tests:
           - not_null
           - unique
