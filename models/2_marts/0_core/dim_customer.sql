@@ -29,18 +29,15 @@ final as (
         customer_order_summary.most_recent_order_date,
         coalesce(customer_order_summary.lifetime_value, 0) as lifetime_value,
         case
-            when coalesce(customer_order_summary.order_count, 0) = 0 then 0
-            else 1.0 * customer_order_summary.order_count / greatest(
+            when customer_order_summary.order_count is null then 0
+            else cast(customer_order_summary.order_count as double) / (
                 (
-                    (
-                        year(customer_order_summary.most_recent_order_date)
-                        - year(customer_order_summary.first_order_date)
-                    ) * 12
+                    (year(customer_order_summary.most_recent_order_date) - year(customer_order_summary.first_order_date)) * 12
                 )
-                + month(customer_order_summary.most_recent_order_date)
-                - month(customer_order_summary.first_order_date)
-                + 1,
-                1
+                + (
+                    month(customer_order_summary.most_recent_order_date) - month(customer_order_summary.first_order_date)
+                )
+                + 1
             )
         end as average_monthly_orders
     from customers
