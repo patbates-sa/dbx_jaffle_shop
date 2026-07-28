@@ -96,6 +96,14 @@ models:
         agg: average
         expr: average_order_value
 
+      - name: average_monthly_orders
+        description: Average monthly order frequency per customer, calculated from each customer's order count divided by the inclusive number of calendar months between first and most recent order dates.
+        label: Average Monthly Orders
+        type: simple
+        agg: average
+        expr: average_monthly_orders
+
+
       - name: repeat_customer_count
         description: Count of customers whose reporting segment is repeat.
         label: Repeat Customer Count
