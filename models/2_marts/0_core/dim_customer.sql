@@ -13,8 +13,7 @@ customer_order_summary as (
         count(order_id) as order_count,
         min(order_date) as first_order_date,
         max(order_date) as most_recent_order_date,
-        sum(amount) as lifetime_value,
-        'temp' as temp_col
+        sum(amount) as lifetime_value
     from {{ ref('fct_orders') }}
     group by 1
 ),
