@@ -27,19 +27,7 @@ final as (
         coalesce(customer_order_summary.order_count, 0) as order_count,
         customer_order_summary.first_order_date,
         customer_order_summary.most_recent_order_date,
-        coalesce(customer_order_summary.lifetime_value, 0) as lifetime_value,
-        case
-            when customer_order_summary.order_count is null then 0
-            else cast(customer_order_summary.order_count as double) / (
-                (
-                    (year(customer_order_summary.most_recent_order_date) - year(customer_order_summary.first_order_date)) * 12
-                )
-                + (
-                    month(customer_order_summary.most_recent_order_date) - month(customer_order_summary.first_order_date)
-                )
-                + 1
-            )
-        end as average_monthly_orders
+        coalesce(customer_order_summary.lifetime_value, 0) as lifetime_value
     from customers
     left join customer_order_summary
         on customers.customer_id = customer_order_summary.customer_id

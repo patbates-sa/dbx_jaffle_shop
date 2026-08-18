@@ -44,5 +44,3 @@ measures:
   - name: average_order_value
     expr: avg(average_order_value)
 
-  - name: average_monthly_orders
-    expr: avg(average_monthly_orders)
