@@ -10,7 +10,7 @@
 {{ config(
     materialized = 'table',
     auto_liquid_cluster = true,
-    enabled = false
+    enabled = true
 ) }}
 
 with employee as (
