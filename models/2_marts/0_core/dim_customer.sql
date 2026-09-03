@@ -22,7 +22,7 @@ final as (
     select
         customers.customer_id,
         customers.first_name,
-        customers.last_name,
+        customers.last_name as last_name,
         customers.full_name,
         coalesce(customer_order_summary.order_count, 0) as order_count,
         customer_order_summary.first_order_date,
